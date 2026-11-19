@@ -1,0 +1,100 @@
+NinjaOne Local Connector for Claude Cowork (Windows 11)
+=======================================================
+
+This gives Claude read-only access to your NinjaOne data, entirely on this PC.
+Nothing is uploaded anywhere. It is not an MCP server -- there is no network
+listener of any kind.
+
+
+BEFORE YOU START
+----------------
+
+Create an API client in NinjaOne (once):
+
+  1. Sign in to NinjaOne as an administrator.
+  2. Go to:  Administration  ->  Apps  ->  API  ->  Client App IDs
+  3. Add an application:
+       - Application platform:  Machine to Machine  (client credentials)
+       - Scopes:  MONITORING ONLY
+         Do NOT tick "management" or "control". The connector only ever asks
+         for monitoring, and setup warns you if the tenant granted more.
+  4. Copy the Client ID and Client Secret somewhere you can paste from. You
+     paste them once, during setup, and they go straight into Windows
+     Credential Manager.
+
+
+INSTALL
+-------
+
+  1. Open PowerShell (no administrator rights needed).
+
+  2. Change to this folder, then run:
+
+       powershell -ExecutionPolicy Bypass -File install.ps1
+
+  3. Answer the prompts. Press Enter to accept defaults for everything except
+     your instance and the two credentials.
+
+       - Instance: which NinjaOne region you sign in to
+         (app / us2 / eu / ca / oc .ninjarmm.com)
+       - Client ID and Client Secret: typing is hidden. That is normal.
+       - Exchange folder: if the installer warned you about OneDrive, type a
+         path outside it, for example  C:\NinjaOneData
+
+  4. When it finishes it prints a short checklist.
+
+
+THEN, IN COWORK
+---------------
+
+  Connect ONE folder:      the exchange folder from step 3
+                           (default  %USERPROFILE%\NinjaOneData )
+
+  Never connect:           %LOCALAPPDATA%\ninjaone-connector
+                           (that private folder holds the database and logs)
+
+  Then just ask, in plain language:
+
+      "Which devices are offline right now, by organization?"
+      "What alerts are firing for <client>?"
+      "How many Windows servers do we manage?"
+      "Full detail and recent activity for device 1234"
+
+  The first question each morning takes longer -- the connector is rebuilding
+  the day's working set. After that it is fast.
+
+
+IF SOMETHING GOES WRONG
+-----------------------
+
+  Run the health check in PowerShell (prints a PASS/FAIL table):
+
+      & "$env:LOCALAPPDATA\ninjaone-connector\connector.py" doctor
+
+  Most common problems:
+    - No usable Python: run  winget install -e --id Python.Python.3.12
+      then re-run install.ps1. The Microsoft Store "python" does not count.
+    - Flaky bridge responses: your exchange folder is inside OneDrive.
+      Move it somewhere that is not synced.
+
+
+UNINSTALL
+---------
+
+      powershell -ExecutionPolicy Bypass -File uninstall.ps1
+
+  You will be asked to type REMOVE to confirm. It removes the scheduled tasks,
+  the Credential Manager item, the skill, the private folder, and the exchange
+  folder.
+
+  Anything you saved in  exports\keep\  is MOVED to
+  %USERPROFILE%\NinjaOneData_saved_exports  first -- it is never deleted.
+
+
+MORE DETAIL
+-----------
+
+  README.md              full documentation, commands, troubleshooting
+  USING-WITH-COWORK.md   what to expect day to day
+  SECURITY_REVIEW.md     the adversarial review and what it found
+  CHANGELOG.md           what changed from the macOS build

@@ -1,0 +1,25 @@
+# Runtime state — must never be committed. The connector writes real
+# credentials-adjacent config, a working database, and logs at runtime; none of
+# it belongs in version control.
+config.json
+*.db
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*-wal
+*-shm
+logs/
+*.log
+*.lock
+
+# Build and OS artifacts
+__pycache__/
+*.pyc
+*.zip
+.DS_Store
+
+# Windows build/runtime artifacts
+tasks/
+*.xml.bak
+Thumbs.db
+desktop.ini
